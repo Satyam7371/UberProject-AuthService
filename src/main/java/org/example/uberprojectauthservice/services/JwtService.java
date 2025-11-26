@@ -24,7 +24,7 @@ public class JwtService implements CommandLineRunner {
     @Value("${jwt.secret}")
     private String SECRET;
 
-    private String createToken(Map<String, Object> payload, String email){
+    public String createToken(Map<String, Object> payload, String email){
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiry*1000L);
@@ -37,13 +37,17 @@ public class JwtService implements CommandLineRunner {
                 .compact();
     }
 
-    private Key getSignKey() {
+    public String createToken(String email){
+        return createToken(new HashMap<>(), email);
+    }
+
+    public Key getSignKey() {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
         return key;
     }
 
 
-    private Claims extractAllPayloads(String token){
+    public Claims extractAllPayloads(String token){
         return Jwts
                 .parser()
                 .setSigningKey(getSignKey())
@@ -59,24 +63,24 @@ public class JwtService implements CommandLineRunner {
     }
 
     // this method will extract the exact info from the payload like expiration
-    private Date extractExpiration(String token){
+    public Date extractExpiration(String token){
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private String extractEmail(String token){
+    public String extractEmail(String token){
         return extractClaim(token, Claims::getSubject);
     }
 
     // This method checks if the token was expired before the current timestamp or not?
-    private Boolean isTokenExpired(String token){
+    public Boolean isTokenExpired(String token){
         return  extractExpiration(token).before(new Date());
     }
 
-    private Boolean validateToken(String token, String email){
+    public Boolean validateToken(String token, String email){
         return  extractEmail(token).equals(email) && !isTokenExpired(token);
     }
 
-    private Object extractPayload(String token, String payloadKey){
+    public Object extractPayload(String token, String payloadKey){
         Claims claims = extractAllPayloads(token);
         return claims.get(payloadKey);
     }
