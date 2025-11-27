@@ -1,6 +1,8 @@
 package org.example.uberprojectauthservice.configurations;
 
+import org.example.uberprojectauthservice.filters.JwtAuthFilter;
 import org.example.uberprojectauthservice.services.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,12 +14,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurity implements WebMvcConfigurer {             // implementing WebMVConfigurer int to remove the CORS policy
+
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -29,9 +35,11 @@ public class SpringSecurity implements WebMvcConfigurer {             // impleme
         return http.csrf(csrf ->
                         csrf.disable())
                         .authorizeHttpRequests(auth ->
-                        auth
+                                auth
                                 .requestMatchers("api/v1/auth/signup/*").permitAll()
                                 .requestMatchers("api/v1/auth/signin/*").permitAll())
+                        .authenticationProvider(authenticationProvider())
+                        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                         .build();
     }
 
@@ -59,6 +67,9 @@ public class SpringSecurity implements WebMvcConfigurer {             // impleme
 
     // method for removing CORS(Cross Origin Request) policy error
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("*").allowedMethods("GET","POST","PUT","DELETE","OPTIONS");
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+//                .allowCredentials(true)
+                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS");
     }
 }

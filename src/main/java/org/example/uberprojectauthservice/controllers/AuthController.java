@@ -1,5 +1,7 @@
 package org.example.uberprojectauthservice.controllers;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.uberprojectauthservice.dtos.AuthRequestDto;
 import org.example.uberprojectauthservice.dtos.AuthResponseDto;
@@ -62,5 +64,17 @@ public class AuthController {
         else  {
             return new ResponseEntity<>("Auth unsuccessful", HttpStatus.OK);
         }
+    }
+
+
+
+    // creating another request for validating the token if the user the authorized for the resource or not
+    @GetMapping("/validate")
+    public ResponseEntity<?> validate(HttpServletRequest request) {
+
+        for(Cookie cookie : request.getCookies()) {
+            System.out.println(cookie.getName() + " " +  cookie.getValue());
+        }
+        return new  ResponseEntity<>("Success",HttpStatus.OK);
     }
 }
